@@ -23,6 +23,35 @@
       <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
   <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=bA855jBQ52TRbpu21Ey0GBD4YxfQWFpH"></script>
+  <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      //网络部署——BBU
+      $("#radio1").click(function(){
+        $("#table1").show();
+        $("#table2").hide();
+      });
+      $("#radio2").click(function(){
+        $("#table1").hide();
+        $("#table2").show();
+      });
+
+      //运行配置——场景参数配置——用户移动模型
+      $("#speedDistributeType").change(function(){
+        var selectedValue=$("#speedDistributeType").val();
+        // if(selectedValue==1){ //均匀分布
+        //   $("#uniformDistribution").show();
+        //   $("#normalDistribution").hide();
+        // }
+        // if(selectedValue==2){ //正太分布
+        //   $("#uniformDistribution").hide();
+        //   $("#normalDistribution").show();
+        // }
+        alter(selectedValue);
+      });
+
+    });
+  </script>
 </head>
 
 <body>
@@ -33,36 +62,58 @@
       <div class="navbar-header">
         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
           aria-expanded="false">
-          <span class="sr-only">Toggle navigation</span>
+          <span class="sr-only">Toggle navigation</span>  <!-- 这个Toggle navigation显示在哪了? -->
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">北京邮电大学</a>
+        <a class="navbar-brand" href="#">CRAN仿真实验平台</a>
         <!-- 这里可以换成一个北邮的logo -->
       </div>
 
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
-          <li>
-            <a href="#">网络部署</a>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">网络部署<span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#" data-toggle="modal" data-target="#BBUModal">BBU</a></li>
+              <li><a href="#" data-toggle="modal" data-target="#RRUModal">RRU</a></li>
+              <li><a href="#" data-toggle="modal" data-target="#UEModal">UE</a></li>
+              <li><a href="#" data-toggle="modal" data-target="#fileImportModal">参数文件导入</a></li>
+            </ul>
           </li>
-          <li>
-            <a href="#">链路部署</a>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">链路部署<span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#" data-toggle="modal" data-target="#BbuPool2BbuPoolModal">BbuPool-BbuPool</a></li>
+              <li><a href="#" data-toggle="modal" data-target="#BBU2BBUModal">BBU-BBU</a></li>
+              <li><a href="#" data-toggle="modal" data-target="#BBU2RRUModal">BBU-RRU</a></li>
+              <li><a href="#" data-toggle="modal" data-target="#LinkCircleModal">LinkCircle</a></li>
+            </ul>
           </li>
-          <li>
-            <a href="#">网络优化</a>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">网络优化<span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#">链接规划</a></li>
+              <li><a href="#">负载均衡</a></li>
+              <li><a href="#">自主管理</a></li>
+              <li><a href="#">节能补偿</a></li>
+            </ul>
           </li>
-          <li>
-            <a href="#">运行配置</a>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">运行配置<span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#" data-toggle="modal" data-target="#sceneParameterConfig">场景参数配置</a></li>
+              <li><a href="#" data-toggle="modal" data-target="#controlParameterConfig">控制参数配置</a></li>
+            </ul>
           </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li>
             <form class="navbar-form navbar-right" role="admin-login">
               <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#loginModal" style="margin-right:20px;">用户登录</button>
-              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#caseManageModal" style="margin-right:20px;">实例管理</button>
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#caseModal" style="margin-right:20px;">实例管理</button>
             </form>
           </li>
         </ul>
@@ -71,7 +122,7 @@
   </nav>
   <!-- 导航条 -->
 
-  <!-- 用户登录模态框 -->
+  <!-- 用户登录 -->
   <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-label="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -81,7 +132,6 @@
           </button>
           <h3 class="modal-title">用户登录</h3>
         </div>
-        <!-- header -->
 
         <form name="" method="post" action=""> <!-- 这里要提交到特定的页面进行处理 -->
           <div class="modal-body">
@@ -96,21 +146,19 @@
               <span class="label label-warning" id="password_msg"></span>
             </div>
           </div>
-          <!-- body -->
 
           <div class="modal-footer">
             <input type="submit" name="submit" class="btn btn-primary" value="登录">
             <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
           </div>
-          <!-- footer -->
         </form>
       </div>
     </div>
   </div>
-  <!-- 用户登录模态框 -->
+  <!-- 用户登录 -->
 
-  <!-- 实例管理模态框 -->
-  <div class="modal fade" id="caseManageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <!-- 实例管理 -->
+  <div class="modal fade" id="caseModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -119,7 +167,6 @@
           </button>
           <h4 class="modal-title" id="myModalLabel">实例管理</h4>
         </div>
-        <!-- header -->
 
         <form name="" method="post" action="">  <!-- 这里要提交到特定的页面进行处理 -->
           <div class="modal-body">
@@ -129,6 +176,7 @@
                 <td>实例名</td>
                 <td>备注</td>
               </tr>
+
               <tr>
                 <td><input type="radio" name="radio" value=""></td>
                 <td>1</td>
@@ -146,17 +194,1737 @@
               </tr>
             </table>
           </div>
-          <!-- body -->
 
           <div class="modal-footer">
             <input type="submit" name="submit" class="btn btn-primary" value="导入实例">
           </div>
-          <!-- footer -->
         </form>
       </div>
     </div>
   </div>
-  <!-- 实例管理模态框 -->
+  <!-- 实例管理 -->
+
+  <!-- 网络部署 -->
+  <!-- BBU -->
+  <div class="modal fade" id="BBUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4>BBU参数输入</h4>
+        </div>
+
+        <div class="modal-body">
+          <h4>BBUPool</h4>
+          <form method="" action="">  <!-- 只是用来承载单选框的，不一定会用到 -->
+            <table class="table table-bordered table-hover text-center">
+              <tr>
+                <td></td>
+                <td>BBUPool ID</td>
+                <td>X坐标(m)</td>
+                <td>Y坐标(m)</td>
+                <td>Z坐标(m)</td>
+                <td>备注</td>
+                <td>修改</td>
+                <td>删除</td>
+              </tr>
+  
+              <tr>
+                <td><input id="radio1" type="radio" name="radio" value=""></td>
+                <td>1</td>
+                <td>516.0</td>
+                <td>116.0</td>
+                <td>1.0</td>
+                <td>延庆</td>
+                <td><a href="#" data-toggle="modal" data-target="#modifyBBUPoolModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+              </tr>
+              <tr>
+                <td><input id="radio2" type="radio" name="radio" value=""></td>
+                <td>2</td>
+                <td>516.0</td>
+                <td>116.0</td>
+                <td>1.0</td>
+                <td>延庆</td>
+                <td><a href="#" data-toggle="modal" data-target="#modifyBBUPoolModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+              </tr>
+            </table>
+          </form>
+          <div class="text-right">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addBBUPoolModal" style="width:110px;height:35px;">添加BBUPool</button>
+          </div>
+          <hr>
+          <h4>BBU</h4>
+          <table id="table1" class="table table-bordered table-hover text-center" hidden>
+            <tr>
+              <td>BBU ID</td>
+              <td>X坐标(m)</td>
+              <td>Y坐标(m)</td>
+              <td>Z坐标(m)</td>
+              <td>传输功率(dBm)</td>
+              <td>资源量</td>
+              <td>RRU的调度方式</td>
+              <td>接入环</td>
+              <td>修改</td>
+              <td>删除</td>
+            </tr>
+
+            <tr>
+              <td>1</td>
+              <td>624.0</td>
+              <td>261.0</td>
+              <td>1500.0</td>
+              <td>43.0</td>
+              <td>20.0</td>
+              <td>CIS</td>
+              <td>2</td>
+              <td><a href="#" data-toggle="modal" data-target="#modifyBBUModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+              <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+            </tr>
+          </table>
+          <table id="table2" class="table table-bordered table-hover text-center" hidden>
+            <tr>
+              <td>BBU ID</td>
+              <td>X坐标(m)</td>
+              <td>Y坐标(m)</td>
+              <td>Z坐标(m)</td>
+              <td>传输功率(dBm)</td>
+              <td>资源量</td>
+              <td>RRU的调度方式</td>
+              <td>接入环</td>
+              <td>修改</td>
+              <td>删除</td>
+            </tr>
+
+            <tr>
+              <td>2</td>
+              <td>624.0</td>
+              <td>261.0</td>
+              <td>1500.0</td>
+              <td>43.0</td>
+              <td>20.0</td>
+              <td>CIS</td>
+              <td>2</td>
+              <td><a href="#" data-toggle="modal" data-target="#modifyBBUModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+              <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+            </tr>
+          </table>
+          <div class="text-right">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addBBUModal" style="width:110px;height:35px;">添加BBU</button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加BBUPool -->
+  <div class="modal fade" id="addBBUPoolModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">添加BBUPool</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="X">X坐标</label>
+              <input type="text" class="form-control" id="X" placeholder="X坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y">Y坐标</label>
+              <input type="text" class="form-control" id="Y" placeholder="Y坐标">
+            </div>
+            <div class="form-group">
+              <label for="Z">Z坐标</label>
+              <input type="text" class="form-control" id="Z" placeholder="Z坐标">
+            </div>
+            <div class="form-group">
+              <label for="remark">备注</label>
+              <input type="text" class="form-control" id="remark" placeholder="备注">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 添加BBUPool -->
+
+  <!-- 修改BBUPool -->
+  <div class="modal fade" id="modifyBBUPoolModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">修改BBUPool</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="X">X坐标</label>
+              <input type="text" class="form-control" id="X" placeholder="X坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y">Y坐标</label>
+              <input type="text" class="form-control" id="Y" placeholder="Y坐标">
+            </div>
+            <div class="form-group">
+              <label for="Z">Z坐标</label>
+              <input type="text" class="form-control" id="Z" placeholder="Z坐标">
+            </div>
+            <div class="form-group">
+              <label for="remark">备注</label>
+              <input type="text" class="form-control" id="remark" placeholder="备注">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 修改BBUPool -->
+
+  <!-- 添加BBU -->
+  <div class="modal fade" id="addBBUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">添加BBU</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="X">X坐标</label>
+              <input type="text" class="form-control" id="X" placeholder="X坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y">Y坐标</label>
+              <input type="text" class="form-control" id="Y" placeholder="Y坐标">
+            </div>
+            <div class="form-group">
+              <label for="Z">Z坐标</label>
+              <input type="text" class="form-control" id="Z" placeholder="Z坐标">
+            </div>
+            <div class="form-group">
+              <label for="transmissionPower">传输功率</label>
+              <input type="text" class="form-control" id="transmissionPower" placeholder="传输功率">
+            </div>
+            <div class="form-group">
+              <label for="resource">资源量</label>
+              <input type="text" class="form-control" id="resource" placeholder="资源量">
+            </div>
+            <div class="form-group">
+              <label for="schedulingMode">调度方式</label>
+              <select class="form-control" id="schedulingMode">
+                <option value="RRS">RRS</option>
+                <option value="CIS">CIS</option>
+                <option value="PFS">PFS</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="accessedRing">接入环ID</label>
+              <input type="text" class="form-control" id="accessedRing" placeholder="接入环ID">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 添加BBU -->
+
+  <!-- 修改BBU -->
+  <div class="modal fade" id="modifyBBUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">修改BBU</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="X">X坐标</label>
+              <input type="text" class="form-control" id="X" placeholder="X坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y">Y坐标</label>
+              <input type="text" class="form-control" id="Y" placeholder="Y坐标">
+            </div>
+            <div class="form-group">
+              <label for="Z">Z坐标</label>
+              <input type="text" class="form-control" id="Z" placeholder="Z坐标">
+            </div>
+            <div class="form-group">
+              <label for="transmissionPower">传输功率</label>
+              <input type="text" class="form-control" id="transmissionPower" placeholder="传输功率">
+            </div>
+            <div class="form-group">
+              <label for="resource">资源量</label>
+              <input type="text" class="form-control" id="resource" placeholder="资源量">
+            </div>
+            <div class="form-group">
+              <label for="schedulingMode">调度方式</label>
+              <select class="form-control" id="schedulingMode">
+                <option value="RRS">RRS</option>
+                <option value="CIS">CIS</option>
+                <option value="PFS">PFS</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="accessedRing">接入环ID</label>
+              <input type="text" class="form-control" id="accessedRing" placeholder="接入环ID">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 修改BBU -->
+  <!-- BBU -->
+
+  <!-- RRU -->
+  <div class="modal fade" id="RRUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">RRU参数录入</h4>
+        </div>
+
+        <div class="modal-body">
+          <h4>BBU</h4>
+          <form method="" action="">  <!-- 只是用来承载单选框的，不一定会用到 -->
+            <table class="table table-bordered table-hover text-center">
+              <tr>
+                <td></td>
+                <td>BBU ID</td>
+                <td>X坐标(m)</td>
+                <td>Y坐标(m)</td>
+                <td>Z坐标(m)</td>
+                <td>传输功率(dBm)</td>
+                <td>资源量</td>
+                <td>RRU的调度方式</td>
+                <td>接入环</td>
+                <td>备注</td>
+              </tr>
+  
+              <tr>
+                <td><input type="radio" name="radio" value=""></td>
+                <td>0</td>
+                <td>176.0</td>
+                <td>301.0</td>
+                <td>1000.0</td>
+                <td>43.0</td>
+                <td>20.0</td>
+                <td>PFS</td>
+                <td>1</td>
+                <td>延庆</td>
+              </tr>
+            </table>
+          </form>
+          <hr>
+          <h4>RRU</h4>
+          <table class="table table-bordered table-hover text-center">
+            <tr>
+              <td>RRU ID</td>
+              <td>X坐标(m)</td>
+              <td>Y坐标(m)</td>
+              <td>Z坐标(m)</td>
+              <td>发射功率(dBm)</td>
+              <td>最大用户量</td>
+              <td>载频(Hz)</td>
+              <td>RRU的状态</td>
+              <td>天线类型</td>
+              <td>修改</td>
+              <td>删除</td>
+            </tr>
+
+            <tr>
+              <td>0</td>
+              <td>4</td>
+              <td>624.0</td>
+              <td>261.0</td>
+              <td>1500.0</td>
+              <td>43.0</td>
+              <td>20.0</td>
+              <td>CIS</td>
+              <td>2</td>
+              <td><a href="#" data-toggle="modal" data-target="#modifyRRUModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+              <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+            </tr>
+          </table>
+          <div class="text-right">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addRRUModal" style="width:110px;height:35px;">添加RRU</button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- RRU -->
+
+  <!-- 添加RRU -->
+  <div class="modal fade" id="addRRUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">添加RRU</h4>
+        </div>
+          
+        <form name="" method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="X">X坐标</label>
+              <input type="text" class="form-control" id="X" placeholder="X坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y">Y坐标</label>
+              <input type="text" class="form-control" id="Y" placeholder="Y坐标">
+            </div>
+            <div class="form-group">
+              <label for="Z">Z坐标</label>
+              <input type="text" class="form-control" id="Z" placeholder="Z坐标">
+            </div>
+            <div class="form-group">
+              <label for="launchPower">发射功率</label>
+              <input type="text" class="form-control" id="launchPower" placeholder="发射功率">
+            </div>
+            <div class="form-group">
+              <label for="maxUserNumber">最大用户量</label>
+              <input type="text" class="form-control" id="maxUserNumber" placeholder="最大用户量">
+            </div>
+            <div class="form-group">
+              <label for="carrierFrequency">载频</label>
+              <input type="text" class="form-control" id="carrierFrequency" placeholder="载频">
+            </div>
+            <div class="form-group">
+              <label for="RRUState">RRU状态</label>
+              <select class="form-control" id="RRUState">
+                <option value="open">打开</option>
+                <option value="close">关闭</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="antennaType">天线类型</label>
+              <select class="form-control" id="antennaType">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 添加RRU -->
+
+  <!-- 修改RRU -->
+  <div class="modal fade" id="modifyRRUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">修改RRU</h4>
+        </div>
+          
+        <form name="" method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="X">X坐标</label>
+              <input type="text" class="form-control" id="X" placeholder="X坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y">Y坐标</label>
+              <input type="text" class="form-control" id="Y" placeholder="Y坐标">
+            </div>
+            <div class="form-group">
+              <label for="Z">Z坐标</label>
+              <input type="text" class="form-control" id="Z" placeholder="Z坐标">
+            </div>
+            <div class="form-group">
+              <label for="launchPower">发射功率</label>
+              <input type="text" class="form-control" id="launchPower" placeholder="发射功率">
+            </div>
+            <div class="form-group">
+              <label for="maxUserNumber">最大用户量</label>
+              <input type="text" class="form-control" id="maxUserNumber" placeholder="最大用户量">
+            </div>
+            <div class="form-group">
+              <label for="carrierFrequency">载频</label>
+              <input type="text" class="form-control" id="carrierFrequency" placeholder="载频">
+            </div>
+            <div class="form-group">
+              <label for="RRUState">RRU状态</label>
+              <select class="form-control" id="RRUState">
+                <option value="open">打开</option>
+                <option value="close">关闭</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="antennaType">天线类型</label>
+              <select class="form-control" id="antennaType">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 修改RRU -->
+
+  <!-- UE -->
+  <div class="modal fade" id="UEModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">UE参数录入</h4>
+        </div>
+
+        <div class="modal-body">
+          <h4>UE群</h4>
+          <form method="" action="">  <!-- 只是用来承载单选框的，不一定会用到 -->
+            <table class="table table-bordered table-hover text-center">
+              <tr>
+                <td></td>
+                <td>UE群ID</td>
+                <td>UE个数</td>
+                <td>中心X坐标(m)</td>
+                <td>中心Y坐标(m)</td>
+                <td>分布方式</td>
+                <td>区域半径(m)</td>
+                <td>室内外信息</td>
+                <td>天线类型</td>
+                <td>修改</td>
+                <td>删除</td>
+              </tr>
+  
+              <tr>
+                <td><input type="radio" name="radio" value=""></td>
+                <td>1</td>
+                <td>30</td>
+                <td>248.0</td>
+                <td>384.0</td>
+                <td>分布方式</td>
+                <td>100.0</td>
+                <td>室外</td>
+                <td>0</td>
+                <td><a href="#" data-toggle="modal" data-target="#modifyUEGroupModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+              </tr>
+            </table>
+          </form>
+          <div class="text-right">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUEGroupModal" style="width:110px;height:35px;">添加UE群</button>
+          </div>
+          <hr>
+          <h4>UE</h4>
+          <table class="table table-bordered table-hover text-center">
+            <tr>
+              <td>UE ID</td>
+              <td>X坐标(m)</td>
+              <td>Y坐标(m)</td>
+              <td>Z坐标(m)</td>
+              <td>室内外信息</td>
+              <td>天线类型</td>
+              <td>UE群ID</td>
+              <td>修改</td>
+              <td>删除</td>
+            </tr>
+
+            <tr>
+              <td>2</td>
+              <td>248.0</td>
+              <td>384.0</td>
+              <td>0.0</td>
+              <td>室外</td>
+              <td>1</td>
+              <td>1</td>
+              <td><a href="#" data-toggle="modal" data-target="#modifyUEModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+              <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+            </tr>
+          </table>
+          <div class="text-right">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUEModal" style="width:110px;height:35px;">添加UE</button>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- UE -->
+
+  <!-- 添加UE群 -->
+  <div class="modal fade" id="addUEGroupModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">添加UE群</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="UENumber">UE个数</label>
+              <input type="text" class="form-control" id="UENumber" placeholder="UE个数">
+            </div>
+            <div class="form-group">
+              <label for="X">中心X坐标</label>
+              <input type="text" class="form-control" id="X" placeholder="中心X坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y">中心Y坐标</label>
+              <input type="text" class="form-control" id="Y" placeholder="中心Y坐标">
+            </div>
+            <div class="form-group">
+              <label for="distributionMode">分布方式</label>
+              <input type="text" class="form-control" id="distributionMode" placeholder="分布方式">
+            </div>
+            <div class="form-group">
+              <label for="regionRadius">区域半径</label>
+              <input type="text" class="form-control" id="regionRadius" placeholder="区域半径">
+            </div>
+            <div class="form-group">
+              <label for="indoorOrOutdoor">室内外信息</label>
+              <select class="form-control" id="indoorOrOutdoor">
+                <option value="indoor">室内</option>
+                <option value="outdoor">室外</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="antennaType">天线类型</label>
+              <select class="form-control" id="antennaType">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 添加UE群 -->
+
+  <!-- 修改UE群 -->
+  <div class="modal fade" id="modifyUEGroupModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">修改UE群</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="UENumber">UE个数</label>
+              <input type="text" class="form-control" id="UENumber" placeholder="UE个数">
+            </div>
+            <div class="form-group">
+              <label for="X">中心X坐标</label>
+              <input type="text" class="form-control" id="X" placeholder="中心X坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y">中心Y坐标</label>
+              <input type="text" class="form-control" id="Y" placeholder="中心Y坐标">
+            </div>
+            <div class="form-group">
+              <label for="distributionMode">分布方式</label>
+              <input type="text" class="form-control" id="distributionMode" placeholder="分布方式">
+            </div>
+            <div class="form-group">
+              <label for="regionRadius">区域半径</label>
+              <input type="text" class="form-control" id="regionRadius" placeholder="区域半径">
+            </div>
+            <div class="form-group">
+              <label for="indoorOrOutdoor">室内外信息</label>
+              <select class="form-control" id="indoorOrOutdoor">
+                <option value="indoor">室内</option>
+                <option value="outdoor">室外</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="antennaType">天线类型</label>
+              <select class="form-control" id="antennaType">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 修改UE群 -->
+
+  <!-- 添加UE -->
+  <div class="modal fade" id="addUEModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">添加UE</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="X">X坐标</label>
+              <input type="text" class="form-control" id="X" placeholder="X坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y">Y坐标</label>
+              <input type="text" class="form-control" id="Y" placeholder="Y坐标">
+            </div>
+            <div class="form-group">
+              <label for="Z">Y坐标</label>
+              <input type="text" class="form-control" id="Z" placeholder="Z坐标">
+            </div>
+            <div class="form-group">
+              <label for="indoorOrOutdoor">室内外信息</label>
+              <select class="form-control" id="indoorOrOutdoor">
+                <option value="indoor">室内</option>
+                <option value="outdoor">室外</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="antennaType">天线类型</label>
+              <select class="form-control" id="antennaType">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="UEGroupID">UE群ID</label>
+              <input type="text" class="form-control" id="UEGroupID" placeholder="UE群ID">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 添加UE -->
+
+  <!-- 修改UE -->
+  <div class="modal fade" id="modifyUEModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">修改UE</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="X">X坐标</label>
+              <input type="text" class="form-control" id="X" placeholder="X坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y">Y坐标</label>
+              <input type="text" class="form-control" id="Y" placeholder="Y坐标">
+            </div>
+            <div class="form-group">
+              <label for="Z">Y坐标</label>
+              <input type="text" class="form-control" id="Z" placeholder="Z坐标">
+            </div>
+            <div class="form-group">
+              <label for="indoorOrOutdoor">室内外信息</label>
+              <select class="form-control" id="indoorOrOutdoor">
+                <option value="indoor">室内</option>
+                <option value="outdoor">室外</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="antennaType">天线类型</label>
+              <select class="form-control" id="antennaType">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="UEGroupID">UE群ID</label>
+              <input type="text" class="form-control" id="UEGroupID" placeholder="UE群ID">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 修改UE -->
+
+  <!-- 参数文件导入 -->
+  <div class="modal fade" id="fileImportModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+        </div>
+
+        <form>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="fileType">参数文件导入类型</label>
+              <select class="form-control" id="fileType">
+                <option value="BBUPool">BBUPool</option>
+                <option value="BBU">BBU</option>
+                <option value="RRU">RRU</option>
+                <option value="UE">UE</option>
+                <option value="天线">天线</option>
+                <option value="LinkCircle">LinkCircle</option>
+                <option value="LinkBbu2Bbu">LinkBbu2Bbu</option>
+                <option value="LinkBbu2Rru">LinkBbu2Rru</option>
+                <option value="LinkBbuPool2BbuPool">LinkBbuPool2BbuPool</option>
+              </select>
+            </div>
+            <hr>
+            <div class="form-group">
+              <label for="fileImport">文件导入</label>
+              <input type="file" id="fileImport">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 参数文件导入 -->
+  <!-- 网络部署 -->
+
+  <!-- 链路部署 -->
+  <!-- BbuPool-BbuPool -->
+  <div class="modal fade" id="BbuPool2BbuPoolModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">BBU池间链路输入</h4>
+        </div>
+
+        <div class="modal-body">
+          <form method="" action="">  <!-- 只是用来承载单选框的，不一定会用到 -->
+            <table class="table table-bordered table-hover text-center">
+              <tr>
+                <td>光纤链路 ID</td>
+                <td>端点池1 ID</td>
+                <td>端点池2 ID</td>
+                <td>最大传输速度(Mbps)</td>
+                <td>链路类型</td>
+                <td>修改</td>
+                <td>删除</td>
+              </tr>
+  
+              <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>2</td>
+                <td>100</td>
+                <td>总线型</td>
+                <td><a href="#" data-toggle="modal" data-target="#modifyBbuPool2BbuPoolModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+              </tr>
+            </table>
+          </form>
+          <div class="text-right">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addBbuPool2BbuPoolModal" style="width:110px;height:35px;">添加</button>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- BbuPool-BbuPool -->
+
+  <!-- 添加BbuPool-BbuPool -->
+  <div class="modal fade" id="addBbuPool2BbuPoolModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">添加BbuPool-BbuPool</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="linkID">光纤链路 ID</label>
+              <input type="text" class="form-control" id="linkID" placeholder="光纤链路ID">
+            </div>
+            <div class="form-group">
+              <label for="BbuPool1ID">端点池1 ID</label>
+              <input type="text" class="form-control" id="BbuPool1ID" placeholder="端点池1 ID">
+            </div>
+            <div class="form-group">
+              <label for="BbuPool2ID">端点池2 ID</label>
+              <input type="text" class="form-control" id="BbuPool2ID" placeholder="端点池2 ID">
+            </div>
+            <div class="form-group">
+              <label for="linkType">链路类型</label>
+              <select class="form-control" id="linkType">
+                <option value="bus">总线型</option>
+                <option value="circle">环形</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="maxTransmissionSpeed">最大传输速度</label>
+              <input type="text" class="form-control" id="maxTransmissionSpeed" placeholder="最大传输速度">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 添加BbuPool-BbuPool -->
+
+  <!-- 修改BbuPool-BbuPool -->
+  <div class="modal fade" id="modifyBbuPool2BbuPoolModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">修改BbuPool-BbuPool</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="linkID">光纤链路 ID</label>
+              <input type="text" class="form-control" id="linkID" placeholder="光纤链路ID">
+            </div>
+            <div class="form-group">
+              <label for="BbuPool1ID">端点池1 ID</label>
+              <input type="text" class="form-control" id="BbuPool1ID" placeholder="端点池1 ID">
+            </div>
+            <div class="form-group">
+              <label for="BbuPool2ID">端点池2 ID</label>
+              <input type="text" class="form-control" id="BbuPool2ID" placeholder="端点池2 ID">
+            </div>
+            <div class="form-group">
+              <label for="linkType">链路类型</label>
+              <select class="form-control" id="linkType">
+                <option value="bus">总线型</option>
+                <option value="circle">环形</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="maxTransmissionSpeed">最大传输速度</label>
+              <input type="text" class="form-control" id="maxTransmissionSpeed" placeholder="最大传输速度">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 修改BbuPool-BbuPool -->
+
+  <!-- BBU-BBU -->
+  <div class="modal fade" id="BBU2BBUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">池内BBU间链路输入</h4>
+        </div>
+
+        <div class="modal-body">
+          <form method="" action="">  <!-- 只是用来承载单选框的，不一定会用到 -->
+            <table class="table table-bordered table-hover text-center">
+              <tr>
+                <td>光纤链路 ID</td>
+                <td>端点BBU1 ID</td>
+                <td>端点BBU2 ID</td>
+                <td>最大传输速度(Mbps)</td>
+                <td>链路类型</td>
+                <td>接入环 ID</td>
+                <td>修改</td>
+                <td>删除</td>
+              </tr>
+  
+              <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>2</td>
+                <td>100</td>
+                <td>总线型</td>
+                <td>1</td>
+                <td><a href="#" data-toggle="modal" data-target="#modifyBBU2BBUModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+              </tr>
+            </table>
+          </form>
+          <div class="text-right">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addBBU2BBUModal" style="width:110px;height:35px;">添加</button>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- BBU-BBU -->
+
+  <!-- 添加BBU-BBU -->
+  <div class="modal fade" id="addBBU2BBUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">添加BBU-BBU</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="linkID">光纤链路 ID</label>
+              <input type="text" class="form-control" id="linkID" placeholder="光纤链路ID">
+            </div>
+            <div class="form-group">
+              <label for="BBU1ID">端点BBU1 ID</label>
+              <input type="text" class="form-control" id="BBU1ID" placeholder="端点BBU1 ID">
+            </div>
+            <div class="form-group">
+              <label for="BBU2ID">端点BBU2 ID</label>
+              <input type="text" class="form-control" id="BBU2ID" placeholder="端点BBU2 ID">
+            </div>
+            <div class="form-group">
+              <label for="linkType">链路类型</label>
+              <select class="form-control" id="linkType">
+                <option value="bus">总线型</option>
+                <option value="circle">环形</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="maxTransmissionSpeed">最大传输速度</label>
+              <input type="text" class="form-control" id="maxTransmissionSpeed" placeholder="最大传输速度">
+            </div>
+            <div class="form-group">
+              <label for="accessedRingID">接入环 ID</label>
+              <input type="text" class="form-control" id="accessedRingID" placeholder="接入环 ID">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 添加BBU-BBU -->
+
+  <!-- 修改BBU-BBU -->
+  <div class="modal fade" id="modifyBBU2BBUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">修改BBU-BBU</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="linkID">光纤链路 ID</label>
+              <input type="text" class="form-control" id="linkID" placeholder="光纤链路ID">
+            </div>
+            <div class="form-group">
+              <label for="BBU1ID">端点BBU1 ID</label>
+              <input type="text" class="form-control" id="BBU1ID" placeholder="端点BBU1 ID">
+            </div>
+            <div class="form-group">
+              <label for="BBU2ID">端点BBU2 ID</label>
+              <input type="text" class="form-control" id="BBU2ID" placeholder="端点BBU2 ID">
+            </div>
+            <div class="form-group">
+              <label for="linkType">链路类型</label>
+              <select class="form-control" id="linkType">
+                <option value="bus">总线型</option>
+                <option value="circle">环形</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="maxTransmissionSpeed">最大传输速度</label>
+              <input type="text" class="form-control" id="maxTransmissionSpeed" placeholder="最大传输速度">
+            </div>
+            <div class="form-group">
+              <label for="accessedRingID">接入环 ID</label>
+              <input type="text" class="form-control" id="accessedRingID" placeholder="接入环 ID">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 修改BBU-BBU -->
+
+  <!-- BBU-RRU -->
+  <div class="modal fade" id="BBU2RRUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">BBU与RRU链路输入</h4>
+        </div>
+
+        <div class="modal-body">
+          <form method="" action="">  <!-- 只是用来承载单选框的，不一定会用到 -->
+            <table class="table table-bordered table-hover text-center">
+              <tr>
+                <td>光纤链路 ID</td>
+                <td>端点BBU ID</td>
+                <td>端点RRU ID</td>
+                <td>最大传输速度(Mbps)</td>
+                <td>链路类型</td>
+                <td>修改</td>
+                <td>删除</td>
+              </tr>
+  
+              <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>2</td>
+                <td>100</td>
+                <td>总线型</td>
+                <td><a href="#" data-toggle="modal" data-target="#modifyBBU2RRUModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+              </tr>
+            </table>
+          </form>
+          <div class="text-right">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addBBU2RRUModal" style="width:110px;height:35px;">添加</button>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加BBU-RRU -->
+  <div class="modal fade" id="addBBU2RRUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">添加BBU-RRU</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="linkID">光纤链路 ID</label>
+              <input type="text" class="form-control" id="linkID" placeholder="光纤链路ID">
+            </div>
+            <div class="form-group">
+              <label for="BBUID">端点BBU ID</label>
+              <input type="text" class="form-control" id="BBUID" placeholder="端点BBU ID">
+            </div>
+            <div class="form-group">
+              <label for="RRUID">端点RRU ID</label>
+              <input type="text" class="form-control" id="RRUID" placeholder="端点RRU ID">
+            </div>
+            <div class="form-group">
+              <label for="maxTransmissionSpeed">最大传输速度</label>
+              <input type="text" class="form-control" id="maxTransmissionSpeed" placeholder="最大传输速度">
+            </div>
+            <div class="form-group">
+              <label for="linkType">链路类型</label>
+              <select class="form-control" id="linkType">
+                <option value="bus">总线型</option>
+                <option value="circle">环形</option>
+              </select>
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 添加BBU-RRU -->
+
+  <!-- 修改BBU-RRU -->
+  <div class="modal fade" id="modifyBBU2RRUModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">修改BBU-RRU</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="linkID">光纤链路 ID</label>
+              <input type="text" class="form-control" id="linkID" placeholder="光纤链路ID">
+            </div>
+            <div class="form-group">
+              <label for="BBUID">端点BBU ID</label>
+              <input type="text" class="form-control" id="BBUID" placeholder="端点BBU ID">
+            </div>
+            <div class="form-group">
+              <label for="RRUID">端点RRU ID</label>
+              <input type="text" class="form-control" id="RRUID" placeholder="端点RRU ID">
+            </div>
+            <div class="form-group">
+              <label for="maxTransmissionSpeed">最大传输速度</label>
+              <input type="text" class="form-control" id="maxTransmissionSpeed" placeholder="最大传输速度">
+            </div>
+            <div class="form-group">
+              <label for="linkType">链路类型</label>
+              <select class="form-control" id="linkType">
+                <option value="bus">总线型</option>
+                <option value="circle">环形</option>
+              </select>
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 修改BBU-RRU -->
+  <!-- BBU-RRU -->
+
+  <!-- LinkCircle -->
+  <div class="modal fade" id="LinkCircleModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">链路输入</h4>
+        </div>
+
+        <div class="modal-body">
+          <form method="" action="">  <!-- 只是用来承载单选框的，不一定会用到 -->
+            <table class="table table-bordered table-hover text-center">
+              <tr>
+                <td>环 ID</td>
+                <td>环类型</td>
+                <td>X1坐标(m)</td>
+                <td>Y1坐标(m)</td>
+                <td>X2坐标(m)</td>
+                <td>Y2坐标(m)</td>
+                <td>长半径(m)</td>
+                <td>短半径(m)</td>
+                <td>备选接入点个数</td>
+                <td>修改</td>
+                <td>删除</td>
+              </tr>
+  
+              <tr>
+                <td>1</td>
+                <td>总线型</td>
+                <td>310.0</td>
+                <td>386.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+                <td>80.0</td>
+                <td>80.0</td>
+                <td>6</td>
+                <td><a href="#" data-toggle="modal" data-target="#modifyLinkCircleModal"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
+              </tr>
+            </table>
+          </form>
+          <div class="text-right">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addLinkCircleModal" style="width:110px;height:35px;">添加</button>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- LinkCircle -->
+
+  <!-- 添加LinkCircle -->
+  <div class="modal fade" id="addLinkCircleModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">添加LinkCircle</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="accessedRingType">接入环类型</label>
+              <select class="form-control" id="accessedRingType">
+                <option value="bus">总线型</option>
+                <option value="circle">环形</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="X1">X1坐标</label>
+              <input type="text" class="form-control" id="X1" placeholder="X1坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y1">Y1坐标</label>
+              <input type="text" class="form-control" id="Y1" placeholder="Y1坐标">
+            </div>
+            <div class="form-group">
+              <label for="X2">X2坐标</label>
+              <input type="text" class="form-control" id="X2" placeholder="X2坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y2">Y2坐标</label>
+              <input type="text" class="form-control" id="Y2" placeholder="Y2坐标">
+            </div>
+            <div class="form-group">
+              <label for="longRadius">长半径</label>
+              <input type="text" class="form-control" id="longRadius" placeholder="长半径">
+            </div>
+            <div class="form-group">
+              <label for="shortRadius">短半径</label>
+              <input type="text" class="form-control" id="shortRadius" placeholder="短半径">
+            </div>
+            <div class="form-group">
+              <label for="alternativeAccessedPointNumber">备选接入点个数</label>
+              <input type="text" class="form-control" id="alternativeAccessedPointNumber" placeholder="备选接入点个数">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 添加LinkCircle -->
+
+  <!-- 修改LinkCircle -->
+  <div class="modal fade" id="modifyLinkCircleModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">修改LinkCircle</h4>
+        </div>
+          
+        <form method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="accessedRingType">接入环类型</label>
+              <select class="form-control" id="accessedRingType">
+                <option value="bus">总线型</option>
+                <option value="circle">环形</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="X1">X1坐标</label>
+              <input type="text" class="form-control" id="X1" placeholder="X1坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y1">Y1坐标</label>
+              <input type="text" class="form-control" id="Y1" placeholder="Y1坐标">
+            </div>
+            <div class="form-group">
+              <label for="X2">X2坐标</label>
+              <input type="text" class="form-control" id="X2" placeholder="X2坐标">
+            </div>
+            <div class="form-group">
+              <label for="Y2">Y2坐标</label>
+              <input type="text" class="form-control" id="Y2" placeholder="Y2坐标">
+            </div>
+            <div class="form-group">
+              <label for="longRadius">长半径</label>
+              <input type="text" class="form-control" id="longRadius" placeholder="长半径">
+            </div>
+            <div class="form-group">
+              <label for="shortRadius">短半径</label>
+              <input type="text" class="form-control" id="shortRadius" placeholder="短半径">
+            </div>
+            <div class="form-group">
+              <label for="alternativeAccessedPointNumber">备选接入点个数</label>
+              <input type="text" class="form-control" id="alternativeAccessedPointNumber" placeholder="备选接入点个数">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            <input type="submit" value="确定" class="btn btn-success"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 修改LinkCircle -->
+  <!-- 链路部署 -->
+
+  <!-- 网络优化 -->
+  <!-- 网络优化 -->
+
+  <!-- 运行配置 -->
+  <!-- 场景参数配置 -->
+  <div class="modal fade" id="sceneParameterConfig" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">场景参数配置</h4>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="userMoveModel">用户移动模型</label>
+            <a href="#" data-toggle="modal" data-target="#userMoveModelModal"><span class="glyphicon glyphicon-wrench text-right"></span></a>
+            <select class="form-control" id="userMoveModel">
+              <option value="1">全随机模型</option>
+              <option value="2">部分随机模型</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="userState">用户状态</label>
+            <input type="text" class="form-control" id="userState" placeholder="用户状态">
+          </div>
+          <div class="form-group">
+            <label for="systemFrequencyBandResource">系统频带资源</label>
+            <input type="text" class="form-control" id="systemFrequencyBandResource" value="频带划分">
+          </div>
+          <div class="form-group">
+            <label for="wirelessLinkModel">无线链路模型</label>
+            <select class="form-control" id="wirelessLinkModel">
+              <option value="1">自由空间模型</option>
+              <option value="2">自由+衰落</option>
+              <option value="3">Hata231</option>
+              <option value="4">Hata231修正</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="resourceDispatchModel">资源调度模型</label>
+            <select class="form-control" id="resourceDispatchModel">
+              <option value="1">轮询</option>
+              <option value="2">最大载干比</option>
+              <option value="3">比例公平</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="businessModel">业务量模型</label>
+            <select class="form-control" id="businessModel">
+              <option value="1">既定业务量</option>
+              <option value="2">非既定业务量</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="wiredLinkModel">有线链路模型</label>
+            <select class="form-control" id="wiredLinkModel">
+              <option value="1">待定</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 场景参数配置 -->
+
+  <!-- 用户移动模型 -->
+  <div class="modal fade" id="userMoveModelModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">用户移动模型配置</h4>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="speedDistributeType">速度分布类型</label>
+            <select class="form-control" id="speedDistributeType">
+              <option value="1">均匀分布</option>
+              <option value="2">正太分布</option>
+            </select>
+          </div>
+          <!-- 均匀分布 -->
+          <div id="uniformDistribution">
+            <div class="form-group">
+              <label for="speedRange">速度范围</label>
+              <div class="row">
+                <div class="col-md-5">
+                  <input type="text" class="form-control" id="speedRangeFrom">
+                </div>
+                <div class="col-md-2 text-center">
+                  <span>————</span>
+                </div>
+                <div class="col-md-5">
+                  <input type="text" class="form-control" id="speedRangeTo">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="X">X区间</label>
+              <div class="row">
+                <div class="col-md-5">
+                  <input type="text" class="form-control" id="XFrom">
+                </div>
+                <div class="col-md-2 text-center">
+                  <span>————</span>
+                </div>
+                <div class="col-md-5">
+                  <input type="text" class="form-control" id="XTo">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="Y">Y区间</label>
+              <div class="row">
+                <div class="col-md-5">
+                  <input type="text" class="form-control" id="YFrom">
+                </div>
+                <div class="col-md-2 text-center">
+                  <span>————</span>
+                </div>
+                <div class="col-md-5">
+                  <input type="text" class="form-control" id="YTo">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 均匀分布 -->
+
+          <!-- 正太分布 -->
+          <div id="normalDistribution">
+            <div class="form-group">
+              <label for="speedAverage">速度均值</label>
+              <input type="text" class="form-control" id="speedAverage" placeholder="速度均值">
+            </div>
+            <div class="form-group">
+              <label for="speedVariance">速度方差</label>
+              <input type="text" class="form-control" id="speedVariance" placeholder="速度方差">
+            </div>
+            <div class="form-group">
+              <label for="X">X区间</label>
+              <div class="row">
+                <div class="col-md-5">
+                  <input type="text" class="form-control" id="XFrom">
+                </div>
+                <div class="col-md-2 text-center">
+                  <span>————</span>
+                </div>
+                <div class="col-md-5">
+                  <input type="text" class="form-control" id="XTo">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="Y">Y区间</label>
+              <div class="row">
+                <div class="col-md-5">
+                  <input type="text" class="form-control" id="YFrom">
+                </div>
+                <div class="col-md-2 text-center">
+                  <span>————</span>
+                </div>
+                <div class="col-md-5">
+                  <input type="text" class="form-control" id="YTo">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 正太分布 -->
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 用户移动模型 -->
+
+  <!-- 控制参数配置 -->
+  <div class="modal fade" id="controlParameterConfig" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">控制参数配置</h4>
+        </div>
+
+        <form name="" method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="sampleUnit">抽样单位</label>
+              <select class="form-control" id="sampleUnit">
+                <option value="TTI">TTI</option>
+                <option value="s">s</option>
+                <option value="m">m</option>
+                <option value="h">h</option>
+                <option value="d">d</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="TTILength">TTI时长(ms)</label>
+              <input type="text" class="form-control" id="TTILength" placeholder="TTI时长(ms)">
+            </div>
+            <div class="form-group">
+              <label for="totalLength">仿真总时长(ms)</label>
+              <input type="text" class="form-control" id="totalLength" placeholder="仿真总时长(ms)">
+            </div>
+            <div class="form-group">
+              <label for="sampleTimeTTINumber">抽样时刻TTI数</label>
+              <input type="text" class="form-control" id="sampleTimeTTINumber" placeholder="抽样时刻TTI数">
+            </div>
+            <div class="form-group">  <!-- 这里要用JS设置效果，未实现 -->
+              <label for="sampleType">抽样类型</label>
+              <select class="form-control" id="sampleType">
+                <option value="1">等间隔抽样</option>
+                <option value="2">自定义抽样</option>
+              </select>
+            </div>
+            <div class="form-group">  <!-- 等间隔抽样间隔 -->
+              <label for="interval1">抽样间隔</label>
+              <input type="text" class="form-control" id="interval1" placeholder="等间隔抽样间隔">
+            </div>
+            <div class="form-group">  <!-- 自定义抽样间隔 -->
+              <label for="interval2">抽样间隔</label>
+              <input type="text" class="form-control" id="interval2" placeholder="用逗号隔开">
+            </div>
+            <div class="form-group">
+              <div class="row">
+                <form name="" method="" action="">
+                  <div class="col-md-6">
+                    <label for="configFile">配置文件</label>
+                    <input type="file" id="configFile">
+                  </div>
+                  <div class="col-md-6 text-right" style="margin-top:15px">
+                    <button type="submit" class="btn btn-primary">上传</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">  <!-- 导出参数按钮未做 -->
+            <button type="submit" class="btn btn-info" data-dismiss="modal">保存</button>
+            <button type="submit" class="btn btn-success" data-dismiss="modal">运行</button>
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 控制参数配置 -->
+  <!-- 运行配置 -->
 
   <!-- 百度地图 -->
   <div class="container-fluid" id="container">
@@ -176,9 +1944,6 @@
     map.enableScrollWheelZoom(true);  //开启鼠标滚轮缩放
 
     map.addControl(new BMap.ScaleControl());  //添加一个比例尺控件
-
-    var marker = new BMap.Marker(point);
-    map.addOverlay(marker); 
   </script>
 </body>
 
