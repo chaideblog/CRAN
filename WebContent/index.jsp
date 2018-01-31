@@ -1,3 +1,20 @@
+<%@ page import="com.database.DBOperation"%>
+<%@ page import="java.sql.*"%>
+<%@ page language="java" contentType="text/html; charset=utf-8"
+    pageEncoding="utf-8"%>
+<%@ page errorPage="errorPage.jsp" %>
+   
+<!-- 为了防止index.jsp文件过大，可以考虑将各个模块分别作为一个jsp文件，然后用include指令包含进来 -->
+    
+<jsp:useBean id="dbo" class="com.database.DBOperation" scope="application"></jsp:useBean>
+
+<!-- 声明成员变量 -->
+
+<!-- 测试 -->
+<%
+
+%>
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -6,15 +23,34 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
-  <title>CRAN</title>
+  <title>test</title>
   <style type="text/css">
     html{height:100%}
-    body{height:100%;margin:0px;padding:0px}
+    body{height:100%;margin:0px;padding-top:50px}
     #container{height:100%}
   </style>
 
   <!-- Bootstrap -->
   <link href="css/bootstrap.min.css" rel="stylesheet">
+  <script type="text/javascript"
+    src="http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js"></script>
+  <script src="http://localhost:8080/CRAN/js/echarts.min.js"></script>
+  <script type="text/javascript"
+    src="http://echarts.baidu.com/gallery/vendors/echarts/echart.min.js"></script>
+  <script type="text/javascript"
+    src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echart-gl.min.js"></script>
+  <script type="text/javascript"
+    src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
+  <script type="text/javascript"
+    src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
+  <script type="text/javascript"
+    src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+  <script type="text/javascript"
+    src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
+  <script type="text/javascript"
+    src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
+  <script type="text/javascript"
+    src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
 
   <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -26,7 +62,7 @@
   <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
   <script>
     $(document).ready(function(){
-      //网络部署——BBU
+      // 网络部署——BBU
       $("#radio1").click(function(){
         $("#table1").show();
         $("#table2").hide();
@@ -38,18 +74,27 @@
 
       //运行配置——场景参数配置——用户移动模型
       $("#speedDistributeType").change(function(){
-        var selectedValue=$("#speedDistributeType").val();
-        // if(selectedValue==1){ //均匀分布
-        //   $("#uniformDistribution").show();
-        //   $("#normalDistribution").hide();
-        // }
-        // if(selectedValue==2){ //正太分布
-        //   $("#uniformDistribution").hide();
-        //   $("#normalDistribution").show();
-        // }
-        alter(selectedValue);
+        var selectedValue=$(this).val();
+        if(selectedValue==1){ //均匀分布
+          $("#uniformDistribution").show();
+          $("#normalDistribution").hide();
+        }
+        if(selectedValue==2){ //正态分布
+          $("#uniformDistribution").hide();
+          $("#normalDistribution").show();
+        }
       });
 
+      //场景参数配置——业务量模型
+      $("#businessModel").change(function(){
+        var selectedValue=$(this).val();
+        if(selectedValue==1){ //非既定业务量
+          $("#businessModelConfig").attr("data-target","#nonEstablishedBusinessModal");
+        }
+        if(selectedValue==2){ //既定业务量
+          $("#businessModelConfig").attr("data-target","#establishedBusinessModal");
+        }
+      });
     });
   </script>
 </head>
@@ -67,7 +112,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">CRAN仿真实验平台</a>
+        <a class="navbar-brand" href="#">CRAN</a>
         <!-- 这里可以换成一个北邮的logo -->
       </div>
 
@@ -110,9 +155,20 @@
           </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
+          <!-- 这里可以考虑用图片显示个数，不过导航条是黑色的，需要将原系统中的图片处理一下显示效果才比较好 -->
+          <li style="color:#FFF;margin-top:15px;margin-right:20px;">BBUPool：10</li>
+          <li style="color:#FFF;margin-top:15px;margin-right:20px;">BBU：10</li>
+          <li style="color:#FFF;margin-top:15px;margin-right:20px;">RRU：10</li>
+          <li style="color:#FFF;margin-top:15px;margin-right:20px;">UE：10</li>
           <li>
-            <form class="navbar-form navbar-right" role="admin-login">
-              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#loginModal" style="margin-right:20px;">用户登录</button>
+            <form class="navbar-form navbar-right">	<!-- 这个form只用来改变样式 -->
+            <%
+            if(session.getAttribute("username")!=null){
+            %>
+            <span style="color:#fff;">欢迎您,<%=session.getAttribute("username") %>!&nbsp;&nbsp;</span><a href="<%=request.getContextPath() %>/logout" style="color:#fff;margin-right:10px">注销</a>
+            <%}else{ %>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#loginModal" style="margin-right:20px;">用户登录</button>
+            <%} %>	<%-- 这个警告是什么意思？ --%>
               <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#caseModal" style="margin-right:20px;">实例管理</button>
             </form>
           </li>
@@ -133,11 +189,11 @@
           <h3 class="modal-title">用户登录</h3>
         </div>
 
-        <form name="" method="post" action=""> <!-- 这里要提交到特定的页面进行处理 -->
+        <form name="loginForm" method="post" action="login"> <!-- 这里要提交到特定的页面进行处理 -->
           <div class="modal-body">
             <div class="form-group">
               <label class="control-label">帐号</label>
-              <input id="name" type="text" name="name" class="form-control" placeholder="帐号" required autofocus/>
+              <input id="name" type="text" name="username" class="form-control" placeholder="帐号" required autofocus/>
               <span class="label label-warning" id="username_msg"></span>
             </div>
             <div class="form-group">
@@ -168,35 +224,45 @@
           <h4 class="modal-title" id="myModalLabel">实例管理</h4>
         </div>
 
-        <form name="" method="post" action="">  <!-- 这里要提交到特定的页面进行处理 -->
+        <form name="importCaseForm" method="post" action="importCase">  <!-- 这里要提交到特定的页面进行处理 -->
           <div class="modal-body">
             <table class="table table-bordered table-hover text-center">
               <tr>
                 <td></td> <!-- 这里本来应该是th，但是如果是th的话无法实现居中，所以改成了td -->
                 <td>实例名</td>
                 <td>备注</td>
+                <td>修改</td>
+                <td>删除</td>
               </tr>
 
               <tr>
-                <td><input type="radio" name="radio" value=""></td>
+                <td><input type="radio" name="caseNum" value="1"></td>
                 <td>1</td>
                 <td>1</td>
+                <td><a href="#"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
               </tr>
               <tr>
-                <td><input type="radio" name="radio" value=""></td>
+                <td><input type="radio" name="caseNum" value="6"></td>
                 <td>6</td>
                 <td>1</td>
+                <td><a href="#"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
               </tr>
               <tr>
-                <td><input type="radio" name="radio" value=""></td>
+                <td><input type="radio" name="caseNum" value="7"></td>
                 <td>7</td>
                 <td>1</td>
+                <td><a href="#"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>
               </tr>
             </table>
           </div>
 
           <div class="modal-footer">
+           	<button type="button" class="btn btn-success">新建</button>
             <input type="submit" name="submit" class="btn btn-primary" value="导入实例">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
           </div>
         </form>
       </div>
@@ -1682,8 +1748,8 @@
 
         <div class="modal-body">
           <div class="form-group">
-            <label for="userMoveModel">用户移动模型</label>
-            <a href="#" data-toggle="modal" data-target="#userMoveModelModal"><span class="glyphicon glyphicon-wrench text-right"></span></a>
+              <label for="userMoveModel">用户移动模型</label>
+              <span style="cursor:pointer;color:dodgerblue" data-toggle="modal" data-target="#userMoveModelModal">详细配置</span>
             <select class="form-control" id="userMoveModel">
               <option value="1">全随机模型</option>
               <option value="2">部分随机模型</option>
@@ -1695,6 +1761,7 @@
           </div>
           <div class="form-group">
             <label for="systemFrequencyBandResource">系统频带资源</label>
+            <span style="cursor:pointer;color:dodgerblue" data-toggle="modal" data-target="#systemFrequencyBandResourceModal">详细配置</span>
             <input type="text" class="form-control" id="systemFrequencyBandResource" value="频带划分">
           </div>
           <div class="form-group">
@@ -1716,9 +1783,10 @@
           </div>
           <div class="form-group">
             <label for="businessModel">业务量模型</label>
+            <span id="businessModelConfig" style="cursor:pointer;color:dodgerblue" data-toggle="modal" data-target="#nonEstablishedBusinessModal">详细配置</span>
             <select class="form-control" id="businessModel">
-              <option value="1">既定业务量</option>
-              <option value="2">非既定业务量</option>
+              <option value="1">非既定业务量</option>
+              <option value="2">既定业务量</option>
             </select>
           </div>
           <div class="form-group">
@@ -1726,6 +1794,19 @@
             <select class="form-control" id="wiredLinkModel">
               <option value="1">待定</option>
             </select>
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <form name="" method="" action="">
+                <div class="col-md-6">
+                  <label for="configFile">配置文件</label>
+                  <input type="file" id="configFile">
+                </div>
+                <div class="col-md-6 text-right" style="margin-top:15px">
+                  <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
 
@@ -1746,110 +1827,288 @@
           <h4 class="modal-title" id="myModalLabel">用户移动模型配置</h4>
         </div>
 
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="speedDistributeType">速度分布类型</label>
-            <select class="form-control" id="speedDistributeType">
-              <option value="1">均匀分布</option>
-              <option value="2">正太分布</option>
-            </select>
-          </div>
-          <!-- 均匀分布 -->
-          <div id="uniformDistribution">
+        <form name="" method="" action="">
+          <div class="modal-body">
             <div class="form-group">
-              <label for="speedRange">速度范围</label>
-              <div class="row">
-                <div class="col-md-5">
-                  <input type="text" class="form-control" id="speedRangeFrom">
+              <label for="speedDistributeType">速度分布类型</label>
+              <select class="form-control" id="speedDistributeType">
+                <option value="1">均匀分布</option>
+                <option value="2">正态分布</option>
+              </select>
+            </div>
+            <!-- 均匀分布 -->
+            <div id="uniformDistribution">
+              <div class="form-group">
+                <label for="speedRange">速度范围</label>
+                <div class="row">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" id="speedRangeFrom">
+                  </div>
+                  <div class="col-md-2 text-center">
+                    <span>————</span>
+                  </div>
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" id="speedRangeTo">
+                  </div>
                 </div>
-                <div class="col-md-2 text-center">
-                  <span>————</span>
+              </div>
+              <div class="form-group">
+                <label for="X">X区间</label>
+                <div class="row">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" id="XFrom">
+                  </div>
+                  <div class="col-md-2 text-center">
+                    <span>————</span>
+                  </div>
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" id="XTo">
+                  </div>
                 </div>
-                <div class="col-md-5">
-                  <input type="text" class="form-control" id="speedRangeTo">
+              </div>
+              <div class="form-group">
+                <label for="Y">Y区间</label>
+                <div class="row">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" id="YFrom">
+                  </div>
+                  <div class="col-md-2 text-center">
+                    <span>————</span>
+                  </div>
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" id="YTo">
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="form-group">
-              <label for="X">X区间</label>
-              <div class="row">
-                <div class="col-md-5">
-                  <input type="text" class="form-control" id="XFrom">
-                </div>
-                <div class="col-md-2 text-center">
-                  <span>————</span>
-                </div>
-                <div class="col-md-5">
-                  <input type="text" class="form-control" id="XTo">
-                </div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="Y">Y区间</label>
-              <div class="row">
-                <div class="col-md-5">
-                  <input type="text" class="form-control" id="YFrom">
-                </div>
-                <div class="col-md-2 text-center">
-                  <span>————</span>
-                </div>
-                <div class="col-md-5">
-                  <input type="text" class="form-control" id="YTo">
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- 均匀分布 -->
+            <!-- 均匀分布 -->
 
-          <!-- 正太分布 -->
-          <div id="normalDistribution">
-            <div class="form-group">
-              <label for="speedAverage">速度均值</label>
-              <input type="text" class="form-control" id="speedAverage" placeholder="速度均值">
-            </div>
-            <div class="form-group">
-              <label for="speedVariance">速度方差</label>
-              <input type="text" class="form-control" id="speedVariance" placeholder="速度方差">
-            </div>
-            <div class="form-group">
-              <label for="X">X区间</label>
-              <div class="row">
-                <div class="col-md-5">
-                  <input type="text" class="form-control" id="XFrom">
+            <!-- 正态分布 -->
+            <div id="normalDistribution" hidden>
+              <div class="form-group">
+                <label for="speedAverage">速度均值</label>
+                <input type="text" class="form-control" id="speedAverage" placeholder="速度均值">
+              </div>
+              <div class="form-group">
+                <label for="speedVariance">速度方差</label>
+                <input type="text" class="form-control" id="speedVariance" placeholder="速度方差">
+              </div>
+              <div class="form-group">
+                <label for="X">X区间</label>
+                <div class="row">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" id="XFrom">
+                  </div>
+                  <div class="col-md-2 text-center">
+                    <span>————</span>
+                  </div>
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" id="XTo">
+                  </div>
                 </div>
-                <div class="col-md-2 text-center">
-                  <span>————</span>
-                </div>
-                <div class="col-md-5">
-                  <input type="text" class="form-control" id="XTo">
+              </div>
+              <div class="form-group">
+                <label for="Y">Y区间</label>
+                <div class="row">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" id="YFrom">
+                  </div>
+                  <div class="col-md-2 text-center">
+                    <span>————</span>
+                  </div>
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" id="YTo">
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="form-group">
-              <label for="Y">Y区间</label>
-              <div class="row">
-                <div class="col-md-5">
-                  <input type="text" class="form-control" id="YFrom">
-                </div>
-                <div class="col-md-2 text-center">
-                  <span>————</span>
-                </div>
-                <div class="col-md-5">
-                  <input type="text" class="form-control" id="YTo">
-                </div>
-              </div>
-            </div>
+            <!-- 正态分布 -->
           </div>
-          <!-- 正太分布 -->
-        </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
-        </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">确定</button>
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
   <!-- 用户移动模型 -->
+
+  <!-- 系统频带资源 -->
+  <div class="modal fade" id="systemFrequencyBandResourceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">系统频带资源</h4>
+          </div>
+
+          <form name="" method="" action="">
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="frequencyBandNumber">频带号</label>
+                <select class="form-control" id="frequencyBandNumber">
+                  <option value="0">添加或选择</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="totalBandwidth">总带宽</label>
+                <input type="text" class="form-control" id="totalBandwidth" placeholder="总带宽">
+              </div>
+              <div class="form-group">
+                <label for="centralFrequency">中心频率</label>
+                <input type="text" class="form-control" id="centralFrequency" placeholder="中心频率">
+              </div>
+              <div class="form-group">
+                <label for="frequencyBandWidth">频带宽度</label>
+                <input type="text" class="form-control" id="frequencyBandWidth" placeholder="频带宽度">
+              </div>
+              <div class="form-group">
+                <label for="isPublicFrequencyBand">是否公共频带</label>
+                <select class="form-control" id="isPublicFrequencyBand">
+                  <option value="1">公共频带</option>
+                  <option value="2">非公共频带</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="BbuPoolID">BbuPool ID</label>
+                <input type="text" class="form-control" id="BbuPoolID" placeholder="BbuPool ID">
+              </div>
+              <div class="form-group">
+                <label for="BbuID">Bbu ID</label>
+                <input type="text" class="form-control" id="BbuID" placeholder="BbuID ID">
+              </div>
+              <div class="text-right">
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addFrequencyBandModal">添加</button>
+                <button type="button" class="btn btn-primary">修改</button> <!-- 修改直接在当前框里修改吧，就不单独写一个框了 -->
+                <button type="button" class="btn btn-danger">删除</button>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  <!-- 系统频带资源 -->
+
+  <!-- 添加频带 -->
+  <div class="modal fade" id="addFrequencyBandModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">添加频带</h4>
+        </div>
+
+        <form name="" method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="frequencyBandNumber">频带号</label>
+              <input type="text" class="form-control" id="frequencyBandNumber" placeholder="频带号">
+            </div>
+            <div class="form-group">
+              <label for="totalBandwidth">总带宽</label>
+              <input type="text" class="form-control" id="totalBandwidth" placeholder="总带宽">
+            </div>
+            <div class="form-group">
+              <label for="centralFrequency">中心频率</label>
+              <input type="text" class="form-control" id="centralFrequency" placeholder="中心频率">
+            </div>
+            <div class="form-group">
+              <label for="frequencyBandWidth">频带宽度</label>
+              <input type="text" class="form-control" id="frequencyBandWidth" placeholder="频带宽度">
+            </div>
+            <div class="form-group">
+              <label for="isPublicFrequencyBand">是否公共频带</label>
+              <select class="form-control" id="isPublicFrequencyBand">
+                <option value="1">公共频带</option>
+                <option value="2">非公共频带</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="BbuPoolID">BbuPool ID</label>
+              <input type="text" class="form-control" id="BbuPoolID" placeholder="BbuPool ID">
+            </div>
+            <div class="form-group">
+              <label for="BbuID">Bbu ID</label>
+              <input type="text" class="form-control" id="BbuID" placeholder="BbuID ID">
+            </div>
+            <p style="color:red">注意：若选择公共频带，不需要BbuPool ID和Bbu ID</p>  <!-- 这里最好把字体颜色改成红色 -->
+          </div>
+
+          <div class="modal-footer">
+            <input type="submit" class="btn btn-primary" value="确定">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 添加频带 -->
+
+  <!-- 非既定业务量 -->
+  <div class="modal fade" id="nonEstablishedBusinessModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">非既定业务量配置</h4>
+        </div>
+  
+        <form name="" method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="VoIPUserProportion">VoIP用户占比</label>
+              <input type="text" class="form-control" id="VoIPUserProportion" placeholder="VoIP用户占比">
+            </div>
+            <div class="form-group">
+              <label for="nonVoIPMinSpeed">非VoIP最低速率</label>
+              <input type="text" class="form-control" id="nonVoIPMinSpeed" placeholder="非VoIP最低速率">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <input type="submit" class="btn btn-success" value="确定">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 非既定业务量 -->
+
+  <!-- 既定业务量模型 -->
+  <div class="modal fade" id="establishedBusinessModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">既定业务量配置</h4>
+        </div>
+  
+        <form name="" method="" action="">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="file">业务量</label>
+              <input type="file" id="file">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <input type="submit" class="btn btn-success" value="确定">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- 既定业务量模型 -->
 
   <!-- 控制参数配置 -->
   <div class="modal fade" id="controlParameterConfig" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -1938,12 +2197,43 @@
   <script src="js/bootstrap.min.js"></script>
 
   <script type="text/javascript">
+  	//初始化地图
     var map = new BMap.Map("container");  //创建地图实例
     var point = new BMap.Point(116.404, 39.915);  //创建点坐标（此处为天安门坐标）
     map.centerAndZoom(point, 15); //初始化地图，设置中心点坐标和地图级别
     map.enableScrollWheelZoom(true);  //开启鼠标滚轮缩放
+    
+    //在地图上添加一些控件
+    map.addControl(new BMap.NavigationControl());	//添加平移缩放控件 （位于地图左上方）
+    map.addControl(new BMap.ScaleControl());	//添加比例尺控件（位于地图左下方）
+    map.addControl(new BMap.OverviewMapControl());	//添加缩略地图（位于地图右下方）
+    map.addControl(new BMap.MapTypeControl());	//添加地图类型（位于地图右上方）
+    map.setCurrentCity("北京"); // 仅当设置城市信息时，MapTypeControl的切换功能才能可用
+    
+//  //添加标注
+//  var marker=new BMap.Marker(new BMap.Point(116.380589,39.913385));
+// 	map.addOverlay(marker);
+// 	var marker=new BMap.Marker(new BMap.Point(116.397981,39.913828));
+// 	map.addOverlay(marker);
+	
+// 	//添加折线
+// 	var polyline=new BMap.Polyline([
+//     new BMap.Point(116.380589,39.913385),
+//     new BMap.Point(116.397981,39.913828)
+//     ],
+//     {strokeColor:"blue", strokeWeight:6, strokeOpacity:0.5}
+//     );
+// 	map.addOverlay(polyline);
 
-    map.addControl(new BMap.ScaleControl());  //添加一个比例尺控件
+	//测试
+	<%
+	String sql="select * from bbu";
+	ResultSet rs=dbo.query(sql);
+	while(rs.next()){
+	%>
+	var marker<%=rs.getInt(1) %>=new BMap.Marker(new BMap.Point(<%=rs.getDouble(3) %>,<%=rs.getDouble(4) %>));
+	map.addOverlay(marker<%=rs.getInt(1) %>);
+	<%} %>
   </script>
 </body>
 
